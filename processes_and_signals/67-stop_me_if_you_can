@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Sends a SIGTERM signal to the 7-highlander process.
+
+# pkill with -f matches the full command line so it finds ./7-highlander
+pkill -f 7-highlander
