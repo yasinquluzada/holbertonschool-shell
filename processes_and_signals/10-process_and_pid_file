@@ -1,22 +1,24 @@
 #!/usr/bin/env bash
-# Script that creates a PID file, prints a message indefinitely and handles signals
+# Creates a PID file, prints messages forever and reacts to signals.
 
 PID_FILE="/var/run/myscript.pid"
 
 cleanup() {
     if [ -f "$PID_FILE" ]; then
-        rm -f "$PID_FILE"
+        current_pid=""
+        current_pid="$(<"$PID_FILE")"
+        if [ "$current_pid" = "$$" ]; then
+            rm -f "$PID_FILE"
+        fi
     fi
-}
-
-sigterm_handler() {
-    echo "I hate the kill command"
-    cleanup
-    exit 0
 }
 
 sigint_handler() {
     echo "Y U no love me?!"
+}
+
+sigterm_handler() {
+    echo "I hate the kill command"
     cleanup
     exit 0
 }
@@ -26,16 +28,14 @@ sigquit_handler() {
     exit 0
 }
 
-# Create/overwrite the PID file with this script's PID
+trap sigint_handler INT
+trap sigterm_handler TERM
+trap sigquit_handler QUIT
+
+# Write our PID to the PID file
 echo "$$" > "$PID_FILE"
 
-# Trap signals
-trap 'sigterm_handler' TERM
-trap 'sigint_handler' INT
-trap 'sigquit_handler' QUIT
-trap 'cleanup' EXIT
-
-# Infinite loop
+# Print forever
 while true; do
     echo "To infinity and beyond"
     sleep 2
