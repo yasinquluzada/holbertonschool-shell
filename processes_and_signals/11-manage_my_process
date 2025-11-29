@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# Init-like script to start, stop, or restart the manage_my_process daemon
+
+PID_FILE="/var/run/my_process.pid"
+MANAGE_SCRIPT="./manage_my_process"
+
+start_service() {
+  # Ensure the managed script exists and is executable
+  if ! [ -x "$MANAGE_SCRIPT" ]; then
+    echo "Error: $MANAGE_SCRIPT not found or not executable" >&2
+    exit 1
+  fi
+
+  "$MANAGE_SCRIPT" &
+  echo "$!" > "$PID_FILE"
+  echo "manage_my_process started"
+}
+
+stop_service() {
+  if [ -f "$PID_FILE" ]; then
+    pid=$(< "$PID_FILE")
+    # Try to stop the process; ignore errors if already dead
+    kill "$pid" 2>/dev/null || true
+    rm -f "$PID_FILE"
+  fi
+  echo "manage_my_process stopped"
+}
+
+restart_service() {
+  if [ -f "$PID_FILE" ]; then
+    pid=$(< "$PID_FILE")
+    kill "$pid" 2>/dev/null || true
+    rm -f "$PID_FILE"
+  fi
+
+  start_service
+  echo "manage_my_process restarted"
+}
+
+case "$1" in
+  start)
+    start_service
+    ;;
+  stop)
+    stop_service
+    ;;
+  restart)
+    restart_service
+    ;;
+  *)
+    echo "Usage: manage_my_process {start|stop|restart}"
+    exit 1
+    ;;
+esac
