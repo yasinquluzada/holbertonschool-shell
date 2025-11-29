@@ -1,41 +1,34 @@
 #!/usr/bin/env bash
-# Creates a PID file, prints messages forever and reacts to signals.
+# Creates a PID file, prints a message forever and handles signals.
 
 PID_FILE="/var/run/myscript.pid"
 
-cleanup() {
-    if [ -f "$PID_FILE" ]; then
-        current_pid=""
-        current_pid="$(<"$PID_FILE")"
-        if [ "$current_pid" = "$$" ]; then
-            rm -f "$PID_FILE"
-        fi
-    fi
-}
+# Write this script's PID into the PID file
+echo "$$" > "$PID_FILE"
 
-sigint_handler() {
+# SIGINT (Ctrl+C): just complain, do NOT remove the PID file or exit
+handle_sigint() {
     echo "Y U no love me?!"
 }
 
-sigterm_handler() {
+# SIGTERM: complain, remove the PID file, then exit
+handle_sigterm() {
     echo "I hate the kill command"
-    cleanup
+    rm -f "$PID_FILE"
     exit 0
 }
 
-sigquit_handler() {
-    cleanup
+# SIGQUIT: just remove the PID file, then exit
+handle_sigquit() {
+    rm -f "$PID_FILE"
     exit 0
 }
 
-trap sigint_handler INT
-trap sigterm_handler TERM
-trap sigquit_handler QUIT
+trap 'handle_sigint' INT
+trap 'handle_sigterm' TERM
+trap 'handle_sigquit' QUIT
 
-# Write our PID to the PID file
-echo "$$" > "$PID_FILE"
-
-# Print forever
+# Infinite loop
 while true; do
     echo "To infinity and beyond"
     sleep 2
