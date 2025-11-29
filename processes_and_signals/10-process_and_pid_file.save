@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-# Script that creates a PID file, prints a message indefinitely and handles signals
-
