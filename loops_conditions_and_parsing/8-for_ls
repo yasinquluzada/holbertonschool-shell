@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Display non-hidden items in the current directory, showing only the part after the first dash
+
+for entry in *; do
+    # If nothing matches "*", avoid printing a literal "*"
+    [ -e "$entry" ] || continue
+
+    # Strip everything up to and including the first dash
+    printf '%s\n' "${entry#*-}"
+done
